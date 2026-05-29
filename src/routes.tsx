@@ -10,7 +10,9 @@ import { RoleGuard } from '@/components/layout/RoleGuard';
 import { TableSkeleton } from '@/components/shared/Skeleton';
 
 // Lazy-loaded pages
+const LandingPage = lazy(() => import('@/pages/LandingPage'));
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'));
+const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
 const AcceptInvitePage = lazy(() => import('@/pages/auth/AcceptInvitePage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
@@ -65,10 +67,16 @@ function SuspenseWrapper({ children }: { children: React.ReactNode }) {
 }
 
 const router = createBrowserRouter([
+  // Public landing page
+  {
+    path: '/',
+    element: <SuspenseWrapper><LandingPage /></SuspenseWrapper>,
+  },
   {
     element: <AuthLayout />,
     children: [
       { path: '/login', element: <SuspenseWrapper><LoginPage /></SuspenseWrapper> },
+      { path: '/register', element: <SuspenseWrapper><RegisterPage /></SuspenseWrapper> },
       { path: '/accept-invitation', element: <SuspenseWrapper><AcceptInvitePage /></SuspenseWrapper> },
       { path: '/forgot-password', element: <SuspenseWrapper><ForgotPasswordPage /></SuspenseWrapper> },
       { path: '/reset-password', element: <SuspenseWrapper><ResetPasswordPage /></SuspenseWrapper> },
@@ -81,7 +89,7 @@ const router = createBrowserRouter([
         element: <DashboardLayout />,
         children: [
           {
-            path: '/',
+            path: '/dashboard',
             element: <SuspenseWrapper><DashboardPage /></SuspenseWrapper>,
           },
           // Employee routes (admin + operator)

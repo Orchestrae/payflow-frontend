@@ -36,7 +36,7 @@ export default function LoginPage() {
       const res = await authApi.login(data.email, data.password);
       setAuth(res.data.token, res.data.user);
       toast.success('Welcome back!');
-      navigate('/');
+      navigate('/dashboard');
     } catch (err: any) {
       toast.error(err.message || 'Invalid email or password');
     } finally {
@@ -86,6 +86,13 @@ export default function LoginPage() {
           Sign in
         </Button>
       </form>
+
+      <p className="mt-6 text-center text-sm text-slate-500">
+        Don't have an account?{' '}
+        <Link to="/register" className="text-[#3B82F6] font-medium hover:underline">
+          Register your business
+        </Link>
+      </p>
     </div>
   );
 }
