@@ -13,6 +13,11 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
+  Bell,
+  CreditCard,
+  Building2,
+  HandCoins,
+  CalendarDays,
 } from 'lucide-react';
 import type { UserRole } from '@/types';
 
@@ -67,10 +72,40 @@ const navItems: NavItem[] = [
     roles: ['admin', 'operator', 'approver'],
   },
   {
+    label: 'Loans',
+    path: '/loans',
+    icon: <HandCoins className="h-5 w-5" />,
+    roles: ['admin', 'operator'],
+  },
+  {
+    label: 'Leave',
+    path: '/leave',
+    icon: <CalendarDays className="h-5 w-5" />,
+    roles: ['admin', 'operator', 'approver'],
+  },
+  {
+    label: 'Notifications',
+    path: '/notifications',
+    icon: <Bell className="h-5 w-5" />,
+    roles: ['admin', 'operator', 'approver'],
+  },
+  {
+    label: 'Billing',
+    path: '/billing',
+    icon: <CreditCard className="h-5 w-5" />,
+    roles: ['admin'],
+  },
+  {
     label: 'Settings',
     path: '/settings',
     icon: <Settings className="h-5 w-5" />,
     roles: ['admin'],
+  },
+  {
+    label: 'Platform',
+    path: '/platform',
+    icon: <Building2 className="h-5 w-5" />,
+    roles: ['super_admin'],
   },
 ];
 

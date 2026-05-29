@@ -1,5 +1,5 @@
 // === Auth & User ===
-export type UserRole = 'admin' | 'operator' | 'approver';
+export type UserRole = 'admin' | 'operator' | 'approver' | 'employee' | 'super_admin';
 
 export interface User {
   id: number;
@@ -360,4 +360,125 @@ export interface CSVImportResponse {
   created_count: number;
   error_count: number;
   errors?: { row: number; message: string }[];
+}
+
+// === Billing & Subscriptions ===
+export type PlanTier = 'free' | 'starter' | 'pro';
+
+export interface SubscriptionPlan {
+  id: number;
+  name: string;
+  tier: PlanTier;
+  price_monthly: number;
+  max_employees: number;
+  max_payroll_runs: number;
+  features: string;
+  is_active: boolean;
+}
+
+export interface Subscription {
+  id: number;
+  business_id: number;
+  plan_id: number;
+  status: string;
+  current_period_start: string;
+  current_period_end: string;
+  plan?: SubscriptionPlan;
+}
+
+export interface Invoice {
+  id: number;
+  business_id: number;
+  amount: number;
+  status: string;
+  paid_at?: string;
+  paystack_ref: string;
+  period_start: string;
+  period_end: string;
+  created_at: string;
+}
+
+// === Platform (Super Admin) ===
+export interface PlatformStats {
+  total_organizations: number;
+  active_organizations: number;
+  suspended_organizations: number;
+  total_employees: number;
+  mrr: number;
+  signups_this_month: number;
+  plan_distribution: Record<string, number>;
+}
+
+export interface OrgSummary {
+  business_id: number;
+  business_name: string;
+  admin_email: string;
+  employee_count: number;
+  plan_tier: string;
+  subscription_status: string;
+  is_suspended: boolean;
+  created_at: string;
+}
+
+// === Notifications ===
+export interface Notification {
+  id: number;
+  user_id: number;
+  title: string;
+  message: string;
+  type: string;
+  is_read: boolean;
+  link_url?: string;
+  created_at: string;
+}
+
+// === Loans ===
+export interface EmployeeLoan {
+  id: number;
+  business_id: number;
+  employee_id: number;
+  loan_amount: number;
+  monthly_deduction: number;
+  total_repaid: number;
+  remaining_balance: number;
+  status: string;
+  start_date: string;
+  description: string;
+  employee?: Employee;
+  created_at: string;
+}
+
+// === Leave ===
+export interface LeaveType {
+  id: number;
+  business_id: number;
+  name: string;
+  default_days: number;
+  requires_approval: boolean;
+}
+
+export interface LeaveRequest {
+  id: number;
+  employee_id: number;
+  business_id: number;
+  leave_type_id: number;
+  start_date: string;
+  end_date: string;
+  days: number;
+  reason: string;
+  status: string;
+  approved_by_id?: number;
+  employee?: Employee;
+  leave_type?: LeaveType;
+  created_at: string;
+}
+
+export interface LeaveBalance {
+  id: number;
+  employee_id: number;
+  leave_type_id: number;
+  year: number;
+  entitled: number;
+  used: number;
+  remaining: number;
 }

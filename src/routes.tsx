@@ -46,6 +46,16 @@ const InviteUserPage = lazy(() => import('@/pages/settings/InviteUserPage'));
 const TeamMembersPage = lazy(() => import('@/pages/settings/TeamMembersPage'));
 const AuditLogsPage = lazy(() => import('@/pages/settings/AuditLogsPage'));
 
+const PlansPage = lazy(() => import('@/pages/billing/PlansPage'));
+const SubscriptionPage = lazy(() => import('@/pages/billing/SubscriptionPage'));
+const PlatformDashboardPage = lazy(() => import('@/pages/platform/PlatformDashboardPage'));
+const OrganizationListPage = lazy(() => import('@/pages/platform/OrganizationListPage'));
+const NotificationListPage = lazy(() => import('@/pages/notifications/NotificationListPage'));
+const LoanListPage = lazy(() => import('@/pages/loans/LoanListPage'));
+const CreateLoanPage = lazy(() => import('@/pages/loans/CreateLoanPage'));
+const LeaveListPage = lazy(() => import('@/pages/leave/LeaveListPage'));
+const CreateLeaveTypePage = lazy(() => import('@/pages/leave/CreateLeaveTypePage'));
+
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return (
     <Suspense fallback={<TableSkeleton />}>
@@ -121,6 +131,40 @@ const router = createBrowserRouter([
               { path: '/settings/invite', element: <SuspenseWrapper><InviteUserPage /></SuspenseWrapper> },
               { path: '/settings/team', element: <SuspenseWrapper><TeamMembersPage /></SuspenseWrapper> },
               { path: '/settings/audit-logs', element: <SuspenseWrapper><AuditLogsPage /></SuspenseWrapper> },
+            ],
+          },
+          // Notifications (all authenticated)
+          { path: '/notifications', element: <SuspenseWrapper><NotificationListPage /></SuspenseWrapper> },
+          // Loans (admin + operator)
+          {
+            element: <RoleGuard allowedRoles={['admin', 'operator']} />,
+            children: [
+              { path: '/loans', element: <SuspenseWrapper><LoanListPage /></SuspenseWrapper> },
+              { path: '/loans/new', element: <SuspenseWrapper><CreateLoanPage /></SuspenseWrapper> },
+            ],
+          },
+          // Leave (all roles)
+          {
+            element: <RoleGuard allowedRoles={['admin', 'operator', 'approver']} />,
+            children: [
+              { path: '/leave', element: <SuspenseWrapper><LeaveListPage /></SuspenseWrapper> },
+              { path: '/leave/types/new', element: <SuspenseWrapper><CreateLeaveTypePage /></SuspenseWrapper> },
+            ],
+          },
+          // Billing (admin)
+          {
+            element: <RoleGuard allowedRoles={['admin']} />,
+            children: [
+              { path: '/billing', element: <SuspenseWrapper><PlansPage /></SuspenseWrapper> },
+              { path: '/billing/subscription', element: <SuspenseWrapper><SubscriptionPage /></SuspenseWrapper> },
+            ],
+          },
+          // Platform Admin (super_admin only)
+          {
+            element: <RoleGuard allowedRoles={['super_admin']} />,
+            children: [
+              { path: '/platform', element: <SuspenseWrapper><PlatformDashboardPage /></SuspenseWrapper> },
+              { path: '/platform/organizations', element: <SuspenseWrapper><OrganizationListPage /></SuspenseWrapper> },
             ],
           },
         ],

@@ -25,6 +25,8 @@ const statusVariantMap: Record<string, BadgeVariant> = {
   // Employee
   active: 'success',
   inactive: 'neutral',
+  // Loans
+  cancelled: 'danger',
   // Wallet
   deposit: 'success',
   withdrawal: 'danger',
@@ -44,6 +46,7 @@ const statusLabelMap: Record<string, string> = {
   success: 'Successful',
   active: 'Active',
   inactive: 'Inactive',
+  cancelled: 'Cancelled',
   deposit: 'Deposit',
   withdrawal: 'Withdrawal',
   fee: 'Fee',
