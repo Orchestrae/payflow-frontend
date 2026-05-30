@@ -15,4 +15,11 @@ export const walletApi = {
       params: { page, limit },
     });
   },
+
+  initiateDeposit(amount: number, email?: string) {
+    return apiClient.post<{ payment_url: string; reference: string; amount: number; message: string }>(
+      '/v1/wallets/deposit',
+      { amount, email }
+    );
+  },
 };
