@@ -24,12 +24,20 @@ export interface Business {
   name: string;
   rc_number?: string;
   incorporation_date?: string;
+  director_bvn_last4?: string;
+  bvn_verified: boolean;
+  rc_verified: boolean;
+  is_verified: boolean;
   payroll_requires_approval: boolean;
   payroll_auto_process: boolean;
   pension_enabled: boolean;
   nhf_enabled: boolean;
   nsitf_enabled: boolean;
   paye_enabled: boolean;
+  subscription_tier: string;
+  subscription_status: string;
+  is_suspended: boolean;
+  currency: string;
   created_at: string;
   updated_at: string;
 }
