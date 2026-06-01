@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import {
   Users,
   UserCheck,
@@ -5,6 +6,11 @@ import {
   Clock,
   Wallet,
   TrendingUp,
+  ArrowRight,
+  CalendarDays,
+  HandCoins,
+  BookOpen,
+  Layers,
 } from 'lucide-react';
 import { useDashboard } from '@/hooks/useApi';
 import { formatNGN } from '@/utils/currency';
@@ -100,12 +106,37 @@ export default function DashboardPage() {
     },
   ];
 
+  const quickLinks = [
+    { label: 'Run Payroll', path: '/payroll/new', icon: <Banknote className="h-4 w-4" /> },
+    { label: 'Add Employee', path: '/employees/new', icon: <Users className="h-4 w-4" /> },
+    { label: 'Leave Requests', path: '/leave', icon: <CalendarDays className="h-4 w-4" /> },
+    { label: 'Loans', path: '/loans', icon: <HandCoins className="h-4 w-4" /> },
+    { label: 'Ledger', path: '/wallet/ledger', icon: <BookOpen className="h-4 w-4" /> },
+    { label: 'Salary Grades', path: '/cadres', icon: <Layers className="h-4 w-4" /> },
+  ];
+
   return (
     <div>
       <h1 className="text-2xl font-bold text-slate-900 mb-6">Dashboard</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         {stats.map((stat) => (
           <StatCard key={stat.label} {...stat} />
+        ))}
+      </div>
+
+      {/* Quick Actions */}
+      <h2 className="text-lg font-semibold text-slate-900 mb-3">Quick Actions</h2>
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {quickLinks.map((link) => (
+          <Link
+            key={link.path}
+            to={link.path}
+            className="flex items-center gap-2 px-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-indigo-200 transition-colors group"
+          >
+            <span className="text-slate-400 group-hover:text-indigo-500 transition-colors">{link.icon}</span>
+            <span>{link.label}</span>
+            <ArrowRight className="h-3 w-3 ml-auto text-slate-300 group-hover:text-indigo-400 transition-colors" />
+          </Link>
         ))}
       </div>
     </div>

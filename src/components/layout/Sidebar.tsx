@@ -18,6 +18,8 @@ import {
   Building2,
   HandCoins,
   CalendarDays,
+  BookOpen,
+  Scale,
 } from 'lucide-react';
 import type { UserRole } from '@/types';
 
@@ -72,6 +74,12 @@ const navItems: NavItem[] = [
     roles: ['admin', 'operator', 'approver'],
   },
   {
+    label: 'Ledger',
+    path: '/wallet/ledger',
+    icon: <BookOpen className="h-5 w-5" />,
+    roles: ['admin', 'operator'],
+  },
+  {
     label: 'Loans',
     path: '/loans',
     icon: <HandCoins className="h-5 w-5" />,
@@ -105,6 +113,12 @@ const navItems: NavItem[] = [
     label: 'Platform',
     path: '/platform',
     icon: <Building2 className="h-5 w-5" />,
+    roles: ['super_admin'],
+  },
+  {
+    label: 'Reconciliation',
+    path: '/platform/reconciliation',
+    icon: <Scale className="h-5 w-5" />,
     roles: ['super_admin'],
   },
 ];
