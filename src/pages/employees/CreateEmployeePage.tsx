@@ -59,8 +59,7 @@ export default function CreateEmployeePage() {
       },
       {
         onSuccess: (response) => {
-          const data = response?.data || response;
-          if (data?.bank_account_verified) {
+          if (response?.bank_account_verified) {
             // Show brief success before redirecting
             setTimeout(() => navigate('/employees'), 1500);
           } else {

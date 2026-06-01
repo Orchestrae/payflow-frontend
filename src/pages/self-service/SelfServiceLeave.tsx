@@ -88,13 +88,13 @@ export default function SelfServiceLeave() {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<LeaveFormData>({
+  } = useForm({
     resolver: zodResolver(leaveSchema),
     defaultValues: { leave_type_id: 0, start_date: '', end_date: '', reason: '' },
   });
 
-  function onSubmit(data: LeaveFormData) {
-    createMutation.mutate(data);
+  function onSubmit(data: any) {
+    createMutation.mutate(data as LeaveFormData);
   }
 
   return (
