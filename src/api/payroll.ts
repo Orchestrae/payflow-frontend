@@ -30,6 +30,14 @@ export const payrollApi = {
     return apiClient.post<PayrollRun>(`/v1/payroll-runs/${id}/process-now`);
   },
 
+  amend(id: number, adjustments: Record<string, unknown> = {}) {
+    return apiClient.put<PayrollRun>(`/v1/payroll-runs/${id}/amend`, adjustments);
+  },
+
+  reverse(id: number, reason: string) {
+    return apiClient.post<PayrollRun>(`/v1/payroll-runs/${id}/reverse`, { reason });
+  },
+
   // Reports — these return file downloads
   downloadReport(runId: number, type: 'paye' | 'pension' | 'nhf' | 'bank-schedule' | 'summary') {
     return apiClient.get(`/v1/payroll-runs/${runId}/reports/${type}`, {

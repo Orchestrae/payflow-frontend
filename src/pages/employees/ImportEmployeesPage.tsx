@@ -1,10 +1,12 @@
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, FileSpreadsheet, CheckCircle, AlertCircle } from 'lucide-react';
+import { Upload, FileSpreadsheet, CheckCircle, AlertCircle, Download } from 'lucide-react';
 import { useImportEmployees } from '@/hooks/useApi';
 import { Button } from '@/components/ui/Button';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import type { CSVImportResponse } from '@/types';
+
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function ImportEmployeesPage() {
   const navigate = useNavigate();
@@ -90,7 +92,18 @@ export default function ImportEmployeesPage() {
 
             <Card>
               <CardContent>
-                <h3 className="text-sm font-semibold text-slate-900 mb-2">CSV Format</h3>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-sm font-semibold text-slate-900">CSV Format</h3>
+                  <a
+                    href={`${API_BASE}/v1/employees/import/template`}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium
+                      text-[#3B82F6] bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200
+                      transition-colors"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Download CSV Template
+                  </a>
+                </div>
                 <p className="text-xs text-slate-500 mb-3">
                   Your CSV should have these columns in the header row:
                 </p>

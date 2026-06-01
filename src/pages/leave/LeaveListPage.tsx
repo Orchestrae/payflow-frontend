@@ -1,10 +1,13 @@
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import toast from 'react-hot-toast';
 import { Link } from 'react-router-dom';
 import { Plus, Check, X, CalendarDays, FileText } from 'lucide-react';
 import { leaveApi } from '@/api/leave';
+import { useEmployees } from '@/hooks/useApi';
 import { Button } from '@/components/ui/Button';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
+import { Modal } from '@/components/ui/Modal';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { TableSkeleton } from '@/components/shared/Skeleton';
@@ -21,6 +24,8 @@ export default function LeaveListPage() {
     queryKey: ['leave-requests'],
     queryFn: () => leaveApi.listRequests().then(r => r.data),
   });
+
+  const { data: employees } = useEmployees();
 
   const approveMutation = useMutation({
     mutationFn: (id: number) => leaveApi.approveRequest(id),
@@ -40,6 +45,49 @@ export default function LeaveListPage() {
     onError: () => toast.error('Failed to reject leave request'),
   });
 
+  // Request Leave modal state
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    employee_id: '',
+    leave_type_id: '',
+    start_date: '',
+    end_date: '',
+    reason: '',
+  });
+
+  const submitRequestMutation = useMutation({
+    mutationFn: (data: { employee_id: number; leave_type_id: number; start_date: string; end_date: string; days: number; reason: string }) =>
+      leaveApi.submitRequest(data),
+    onSuccess: () => {
+      toast.success('Leave request submitted');
+      queryClient.invalidateQueries({ queryKey: ['leave-requests'] });
+      setRequestOpen(false);
+      setFormData({ employee_id: '', leave_type_id: '', start_date: '', end_date: '', reason: '' });
+    },
+    onError: (err: Error) => toast.error(err.message || 'Failed to submit leave request'),
+  });
+
+  function handleSubmitRequest() {
+    if (!formData.employee_id || !formData.leave_type_id || !formData.start_date || !formData.end_date) {
+      toast.error('Please fill in all required fields');
+      return;
+    }
+    // Calculate business days (simple approximation — backend does the real count)
+    const start = new Date(formData.start_date);
+    const end = new Date(formData.end_date);
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1);
+
+    submitRequestMutation.mutate({
+      employee_id: parseInt(formData.employee_id),
+      leave_type_id: parseInt(formData.leave_type_id),
+      start_date: formData.start_date,
+      end_date: formData.end_date,
+      days: diffDays,
+      reason: formData.reason,
+    });
+  }
+
   const requests = requestsData?.data || [];
 
   if (typesLoading || requestsLoading) {
@@ -51,6 +99,8 @@ export default function LeaveListPage() {
     );
   }
 
+  const inputClass = "w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22BC66]/20 focus:border-[#22BC66]";
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -58,9 +108,14 @@ export default function LeaveListPage() {
           <h1 className="text-2xl font-bold text-slate-900">Leave Management</h1>
           <p className="text-sm text-slate-500 mt-1">Manage leave types, requests, and balances</p>
         </div>
-        <Link to="/leave/types/new">
-          <Button icon={<Plus className="h-4 w-4" />}>Create Leave Type</Button>
-        </Link>
+        <div className="flex gap-2">
+          <Button variant="outline" icon={<Plus className="h-4 w-4" />} onClick={() => setRequestOpen(true)}>
+            Request Leave
+          </Button>
+          <Link to="/leave/types/new">
+            <Button icon={<Plus className="h-4 w-4" />}>Create Leave Type</Button>
+          </Link>
+        </div>
       </div>
 
       {/* Leave Types */}
@@ -176,6 +231,79 @@ export default function LeaveListPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Request Leave Modal */}
+      <Modal open={requestOpen} onClose={() => setRequestOpen(false)} title="Request Leave">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1">Employee</label>
+            <select
+              value={formData.employee_id}
+              onChange={(e) => setFormData((f) => ({ ...f, employee_id: e.target.value }))}
+              className={inputClass}
+            >
+              <option value="">Select employee...</option>
+              {employees?.map((emp) => (
+                <option key={emp.id} value={emp.id}>{emp.full_name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1">Leave Type</label>
+            <select
+              value={formData.leave_type_id}
+              onChange={(e) => setFormData((f) => ({ ...f, leave_type_id: e.target.value }))}
+              className={inputClass}
+            >
+              <option value="">Select leave type...</option>
+              {types?.map((type) => (
+                <option key={type.id} value={type.id}>{type.name} ({type.default_days} days)</option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">Start Date</label>
+              <input
+                type="date"
+                value={formData.start_date}
+                onChange={(e) => setFormData((f) => ({ ...f, start_date: e.target.value }))}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">End Date</label>
+              <input
+                type="date"
+                value={formData.end_date}
+                onChange={(e) => setFormData((f) => ({ ...f, end_date: e.target.value }))}
+                min={formData.start_date}
+                className={inputClass}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1">Reason (optional)</label>
+            <textarea
+              value={formData.reason}
+              onChange={(e) => setFormData((f) => ({ ...f, reason: e.target.value }))}
+              placeholder="Reason for leave request..."
+              rows={2}
+              className={`${inputClass} resize-none`}
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setRequestOpen(false)}>Cancel</Button>
+            <Button
+              loading={submitRequestMutation.isPending}
+              disabled={!formData.employee_id || !formData.leave_type_id || !formData.start_date || !formData.end_date}
+              onClick={handleSubmitRequest}
+            >
+              Submit request
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

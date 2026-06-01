@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Save } from 'lucide-react';
+import { Save, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useCreateEmployee, useCadres } from '@/hooks/useApi';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -57,7 +57,17 @@ export default function CreateEmployeePage() {
           ? parseNGNToKobo(data.annual_rent_paid)
           : undefined,
       },
-      { onSuccess: () => navigate('/employees') }
+      {
+        onSuccess: (response) => {
+          const data = response?.data || response;
+          if (data?.bank_account_verified) {
+            // Show brief success before redirecting
+            setTimeout(() => navigate('/employees'), 1500);
+          } else {
+            navigate('/employees');
+          }
+        },
+      }
     );
   }
 

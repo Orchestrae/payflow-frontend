@@ -142,6 +142,20 @@ export function Sidebar({ mobileOpen, onMobileClose }: SidebarProps) {
         )}
       </div>
 
+      {/* Environment indicator */}
+      {!sidebarCollapsed && (
+        <div className="px-4 py-1.5">
+          <span className={`inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider rounded-full ${
+            (import.meta.env.VITE_API_URL || '').includes('localhost')
+              ? 'bg-amber-500/20 text-amber-400'
+              : 'bg-emerald-500/20 text-emerald-400'
+          }`}>
+            <span className="h-1.5 w-1.5 rounded-full bg-current" />
+            {(import.meta.env.VITE_API_URL || '').includes('localhost') ? 'Test Mode' : 'Live'}
+          </span>
+        </div>
+      )}
+
       {/* Nav */}
       <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
         {filteredItems.map((item) => (

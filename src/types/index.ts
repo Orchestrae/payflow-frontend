@@ -6,6 +6,9 @@ export interface User {
   email: string;
   role: UserRole;
   business_id: number;
+  employee_id?: number;
+  full_name?: string;
+  company_name?: string;
   is_verified: boolean;
   invite_accepted: boolean;
   created_at: string;
@@ -62,6 +65,8 @@ export interface Employee {
   bank_code: string;
   bank_account_number: string;
   is_active: boolean;
+  bank_account_verified: boolean;
+  bank_account_name?: string;
   tin?: string;
   pension_rsa_pin?: string;
   nhf_number?: string;
@@ -363,6 +368,36 @@ export interface WalletTransactionListResponse {
   limit: number;
 }
 
+// === Ledger ===
+export interface LedgerEntry {
+  id: number;
+  business_id: number;
+  transaction_id: string;
+  account_type: 'wallet' | 'external' | 'revenue' | 'payable';
+  entry_type: 'debit' | 'credit';
+  amount: number;
+  description: string;
+  reference: string;
+  created_at: string;
+}
+
+export interface LedgerEntryListResponse {
+  entries: LedgerEntry[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface ReconciliationResult {
+  business_id: number;
+  wallet_balance: number;
+  ledger_credits: number;
+  ledger_debits: number;
+  ledger_balance: number;
+  discrepancy: number;
+  is_reconciled: boolean;
+}
+
 // === CSV Import ===
 export interface CSVImportResponse {
   created_count: number;
@@ -428,6 +463,21 @@ export interface OrgSummary {
   created_at: string;
 }
 
+export interface PlatformSettingSummary {
+  key: string;
+  description: string;
+  category: string;
+  is_set: boolean;
+  masked_value?: string;
+}
+
+export interface OrgProviderSettingSummary {
+  provider: string;
+  setting_key: string;
+  is_active: boolean;
+  masked_value?: string;
+}
+
 // === Notifications ===
 export interface Notification {
   id: number;
@@ -489,4 +539,57 @@ export interface LeaveBalance {
   entitled: number;
   used: number;
   remaining: number;
+}
+
+// === Self-Service (Employee Portal) ===
+export interface EmployeeProfile {
+  id: number;
+  business_id: number;
+  cadre_id: number;
+  full_name: string;
+  email: string;
+  bank_name: string;
+  bank_code: string;
+  bank_account_number: string;
+  is_active: boolean;
+  bank_account_verified: boolean;
+  bank_account_name?: string;
+  tin?: string;
+  pension_rsa_pin?: string;
+  nhf_number?: string;
+  annual_rent_paid: number;
+  cadre?: Cadre;
+  company_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UpdateBankDetailsRequest {
+  bank_name: string;
+  bank_code: string;
+  bank_account_number: string;
+}
+
+export interface Payslip {
+  id: number;
+  payroll_run_id: number;
+  employee_id: number;
+  period: string;
+  gross_pay: number;
+  total_deductions: number;
+  bonuses: number;
+  net_pay: number;
+  employer_pension: number;
+  employer_nsitf: number;
+  total_employer_cost: number;
+  total_cost_to_company: number;
+  details: PayrollRunEntryDetail[];
+  created_at: string;
+}
+
+export interface CreateLeaveRequestPayload {
+  leave_type_id: number;
+  start_date: string;
+  end_date: string;
+  reason: string;
 }

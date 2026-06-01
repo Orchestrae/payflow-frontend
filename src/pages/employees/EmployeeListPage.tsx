@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Upload, Search, UserX, Users } from 'lucide-react';
+import { Plus, Upload, Search, UserX, Users, CheckCircle, AlertCircle } from 'lucide-react';
 import { useEmployees, useDeactivateEmployee } from '@/hooks/useApi';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -103,6 +103,7 @@ export default function EmployeeListPage() {
                   <th className="text-left px-6 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Name</th>
                   <th className="text-left px-6 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Email</th>
                   <th className="text-left px-6 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Bank</th>
+                  <th className="text-left px-6 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Verified</th>
                   <th className="text-left px-6 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Status</th>
                   <th className="text-right px-6 py-3 text-xs font-medium uppercase tracking-wide text-slate-500">Actions</th>
                 </tr>
@@ -116,6 +117,17 @@ export default function EmployeeListPage() {
                     <td className="px-6 py-3 font-medium text-slate-900">{emp.full_name}</td>
                     <td className="px-6 py-3 text-slate-600">{emp.email}</td>
                     <td className="px-6 py-3 text-slate-600">{emp.bank_name}</td>
+                    <td className="px-6 py-3">
+                      {emp.bank_account_verified ? (
+                        <span className="inline-flex items-center gap-1 text-xs text-green-600" title={emp.bank_account_name || 'Verified'}>
+                          <CheckCircle className="h-3.5 w-3.5" /> Verified
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-xs text-amber-600">
+                          <AlertCircle className="h-3.5 w-3.5" /> Unverified
+                        </span>
+                      )}
+                    </td>
                     <td className="px-6 py-3">
                       <StatusBadge status={emp.is_active ? 'active' : 'inactive'} />
                     </td>

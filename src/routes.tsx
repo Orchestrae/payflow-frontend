@@ -5,6 +5,7 @@ import {
 } from 'react-router-dom';
 import { AuthLayout } from '@/components/layout/AuthLayout';
 import { DashboardLayout } from '@/components/layout/DashboardLayout';
+import { SelfServiceLayout } from '@/components/layout/SelfServiceLayout';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { RoleGuard } from '@/components/layout/RoleGuard';
 import { TableSkeleton } from '@/components/shared/Skeleton';
@@ -16,6 +17,7 @@ const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'));
 const AcceptInvitePage = lazy(() => import('@/pages/auth/AcceptInvitePage'));
 const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'));
+const VerifyEmailPage = lazy(() => import('@/pages/auth/VerifyEmailPage'));
 
 const DashboardPage = lazy(() => import('@/pages/dashboard/DashboardPage'));
 
@@ -42,6 +44,7 @@ const BatchTransferPage = lazy(() => import('@/pages/transfers/BatchTransferPage
 
 const WalletOverviewPage = lazy(() => import('@/pages/wallet/WalletOverviewPage'));
 const TransactionsPage = lazy(() => import('@/pages/wallet/TransactionsPage'));
+const LedgerPage = lazy(() => import('@/pages/wallet/LedgerPage'));
 
 const BusinessSettingsPage = lazy(() => import('@/pages/settings/BusinessSettingsPage'));
 const InviteUserPage = lazy(() => import('@/pages/settings/InviteUserPage'));
@@ -52,11 +55,21 @@ const PlansPage = lazy(() => import('@/pages/billing/PlansPage'));
 const SubscriptionPage = lazy(() => import('@/pages/billing/SubscriptionPage'));
 const PlatformDashboardPage = lazy(() => import('@/pages/platform/PlatformDashboardPage'));
 const OrganizationListPage = lazy(() => import('@/pages/platform/OrganizationListPage'));
+const PlatformSettingsPage = lazy(() => import('@/pages/platform/PlatformSettingsPage'));
+const ReconciliationDashboardPage = lazy(() => import('@/pages/platform/ReconciliationDashboardPage'));
 const NotificationListPage = lazy(() => import('@/pages/notifications/NotificationListPage'));
 const LoanListPage = lazy(() => import('@/pages/loans/LoanListPage'));
 const CreateLoanPage = lazy(() => import('@/pages/loans/CreateLoanPage'));
 const LeaveListPage = lazy(() => import('@/pages/leave/LeaveListPage'));
 const CreateLeaveTypePage = lazy(() => import('@/pages/leave/CreateLeaveTypePage'));
+
+// Employee self-service
+const EmployeeLoginPage = lazy(() => import('@/pages/auth/EmployeeLoginPage'));
+const SelfServiceDashboard = lazy(() => import('@/pages/self-service/SelfServiceDashboard'));
+const SelfServicePayslips = lazy(() => import('@/pages/self-service/SelfServicePayslips'));
+const SelfServiceLeave = lazy(() => import('@/pages/self-service/SelfServiceLeave'));
+const SelfServiceProfile = lazy(() => import('@/pages/self-service/SelfServiceProfile'));
+const SelfServiceLoans = lazy(() => import('@/pages/self-service/SelfServiceLoans'));
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -77,11 +90,35 @@ const router = createBrowserRouter([
     children: [
       { path: '/login', element: <SuspenseWrapper><LoginPage /></SuspenseWrapper> },
       { path: '/register', element: <SuspenseWrapper><RegisterPage /></SuspenseWrapper> },
+      { path: '/employee-login', element: <SuspenseWrapper><EmployeeLoginPage /></SuspenseWrapper> },
       { path: '/accept-invitation', element: <SuspenseWrapper><AcceptInvitePage /></SuspenseWrapper> },
       { path: '/forgot-password', element: <SuspenseWrapper><ForgotPasswordPage /></SuspenseWrapper> },
       { path: '/reset-password', element: <SuspenseWrapper><ResetPasswordPage /></SuspenseWrapper> },
+      { path: '/verify-email', element: <SuspenseWrapper><VerifyEmailPage /></SuspenseWrapper> },
     ],
   },
+  // Employee self-service portal
+  {
+    element: <ProtectedRoute />,
+    children: [
+      {
+        element: <RoleGuard allowedRoles={['employee']} />,
+        children: [
+          {
+            element: <SelfServiceLayout />,
+            children: [
+              { path: '/self-service/dashboard', element: <SuspenseWrapper><SelfServiceDashboard /></SuspenseWrapper> },
+              { path: '/self-service/payslips', element: <SuspenseWrapper><SelfServicePayslips /></SuspenseWrapper> },
+              { path: '/self-service/leave', element: <SuspenseWrapper><SelfServiceLeave /></SuspenseWrapper> },
+              { path: '/self-service/profile', element: <SuspenseWrapper><SelfServiceProfile /></SuspenseWrapper> },
+              { path: '/self-service/loans', element: <SuspenseWrapper><SelfServiceLoans /></SuspenseWrapper> },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+  // Admin dashboard
   {
     element: <ProtectedRoute />,
     children: [
@@ -131,6 +168,7 @@ const router = createBrowserRouter([
           // Wallet routes (all authenticated)
           { path: '/wallet', element: <SuspenseWrapper><WalletOverviewPage /></SuspenseWrapper> },
           { path: '/wallet/transactions', element: <SuspenseWrapper><TransactionsPage /></SuspenseWrapper> },
+          { path: '/wallet/ledger', element: <SuspenseWrapper><LedgerPage /></SuspenseWrapper> },
           // Settings routes (admin only)
           {
             element: <RoleGuard allowedRoles={['admin']} />,
@@ -173,6 +211,8 @@ const router = createBrowserRouter([
             children: [
               { path: '/platform', element: <SuspenseWrapper><PlatformDashboardPage /></SuspenseWrapper> },
               { path: '/platform/organizations', element: <SuspenseWrapper><OrganizationListPage /></SuspenseWrapper> },
+              { path: '/platform/settings', element: <SuspenseWrapper><PlatformSettingsPage /></SuspenseWrapper> },
+              { path: '/platform/reconciliation', element: <SuspenseWrapper><ReconciliationDashboardPage /></SuspenseWrapper> },
             ],
           },
         ],

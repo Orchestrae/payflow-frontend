@@ -1,5 +1,5 @@
 import apiClient from './client';
-import type { PlatformStats, OrgSummary } from '@/types';
+import type { PlatformStats, OrgSummary, PlatformSettingSummary } from '@/types';
 
 export const platformApi = {
   getStats() {
@@ -13,5 +13,18 @@ export const platformApi = {
   },
   activateOrg(id: number) {
     return apiClient.post(`/platform/organizations/${id}/activate`);
+  },
+
+  // Platform Settings
+  getSettings(category?: string) {
+    return apiClient.get<PlatformSettingSummary[]>('/platform/settings', {
+      params: category ? { category } : {},
+    });
+  },
+  setSetting(key: string, value: string, description: string, category: string) {
+    return apiClient.put(`/platform/settings/${key}`, { value, description, category });
+  },
+  deleteSetting(key: string) {
+    return apiClient.delete(`/platform/settings/${key}`);
   },
 };

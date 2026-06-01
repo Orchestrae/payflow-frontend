@@ -1,18 +1,65 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { UserPlus, Users, ScrollText } from 'lucide-react';
+import { UserPlus, Users, ScrollText, Key, Trash2, Eye, EyeOff } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { useBusinessSettings, useUpdateBusinessSettings } from '@/hooks/useApi';
+import { settingsApi } from '@/api/settings';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Toggle } from '@/components/ui/Toggle';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { CardSkeleton } from '@/components/shared/Skeleton';
+
+const PROVIDER_KEYS = [
+  { provider: 'paystack', key: 'paystack_secret_key', label: 'Paystack Secret Key', placeholder: 'sk_live_...' },
+  { provider: 'paystack', key: 'paystack_public_key', label: 'Paystack Public Key', placeholder: 'pk_live_...' },
+  { provider: 'korapay', key: 'korapay_api_key', label: 'Korapay API Key', placeholder: 'sk_...' },
+  { provider: 'korapay', key: 'korapay_encryption_key', label: 'Korapay Encryption Key', placeholder: 'enc_...' },
+];
 
 export default function BusinessSettingsPage() {
   const navigate = useNavigate();
   const { data: settings, isLoading } = useBusinessSettings();
   const updateSettings = useUpdateBusinessSettings();
+  const queryClient = useQueryClient();
+  const [showProviderKeys, setShowProviderKeys] = useState(false);
+  const [keyValues, setKeyValues] = useState<Record<string, string>>({});
+  const [visibleKeys, setVisibleKeys] = useState<Record<string, boolean>>({});
+
+  const { data: providerKeys } = useQuery({
+    queryKey: ['provider-keys'],
+    queryFn: () => settingsApi.getProviderKeys().then(r => r.data),
+    enabled: showProviderKeys,
+  });
+
+  const setKeyMutation = useMutation({
+    mutationFn: ({ provider, key, value }: { provider: string; key: string; value: string }) =>
+      settingsApi.setProviderKey(provider, key, value),
+    onSuccess: () => {
+      toast.success('API key saved');
+      queryClient.invalidateQueries({ queryKey: ['provider-keys'] });
+      setKeyValues({});
+    },
+    onError: () => toast.error('Failed to save key'),
+  });
+
+  const deleteKeyMutation = useMutation({
+    mutationFn: ({ provider, key }: { provider: string; key: string }) =>
+      settingsApi.deleteProviderKey(provider, key),
+    onSuccess: () => {
+      toast.success('API key removed');
+      queryClient.invalidateQueries({ queryKey: ['provider-keys'] });
+    },
+    onError: () => toast.error('Failed to remove key'),
+  });
 
   function handleToggle(field: string, value: boolean) {
     updateSettings.mutate({ [field]: value });
+  }
+
+  function getExistingKey(provider: string, key: string) {
+    return providerKeys?.find(k => k.provider === provider && k.setting_key === key);
   }
 
   if (isLoading) {
@@ -106,6 +153,120 @@ export default function BusinessSettingsPage() {
               onChange={(v) => handleToggle('payroll_auto_process', v)}
             />
           </CardContent>
+        </Card>
+
+        {/* Provider API Keys */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Key className="h-5 w-5 text-amber-600" />
+                  Use Your Own API Keys
+                </h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  Optionally use your own payment provider keys instead of platform defaults. Keys are AES-256 encrypted at rest.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowProviderKeys(!showProviderKeys)}
+              >
+                {showProviderKeys ? 'Hide' : 'Configure'}
+              </Button>
+            </div>
+          </CardHeader>
+          {showProviderKeys && (
+            <CardContent className="space-y-6">
+              {['paystack', 'korapay'].map(provider => (
+                <div key={provider}>
+                  <h3 className="text-sm font-semibold text-slate-700 mb-3 capitalize">{provider}</h3>
+                  <div className="space-y-3">
+                    {PROVIDER_KEYS.filter(k => k.provider === provider).map(keyDef => {
+                      const existing = getExistingKey(keyDef.provider, keyDef.key);
+                      const fieldId = `${keyDef.provider}_${keyDef.key}`;
+                      const isVisible = visibleKeys[fieldId];
+                      return (
+                        <div key={fieldId} className="flex items-center gap-2">
+                          <div className="flex-1">
+                            <label className="text-xs font-medium text-slate-600 block mb-1">{keyDef.label}</label>
+                            {existing && !keyValues[fieldId] ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm text-slate-500 font-mono bg-slate-50 px-3 py-1.5 rounded border">
+                                  {existing.masked_value || '****'}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setKeyValues({ ...keyValues, [fieldId]: '' })}
+                                >
+                                  Update
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => deleteKeyMutation.mutate({ provider: keyDef.provider, key: keyDef.key })}
+                                >
+                                  <Trash2 className="h-3.5 w-3.5 text-red-500" />
+                                </Button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                <div className="relative flex-1">
+                                  <Input
+                                    type={isVisible ? 'text' : 'password'}
+                                    placeholder={keyDef.placeholder}
+                                    value={keyValues[fieldId] || ''}
+                                    onChange={e => setKeyValues({ ...keyValues, [fieldId]: e.target.value })}
+                                  />
+                                  <button
+                                    type="button"
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                    onClick={() => setVisibleKeys({ ...visibleKeys, [fieldId]: !isVisible })}
+                                  >
+                                    {isVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                  </button>
+                                </div>
+                                <Button
+                                  size="sm"
+                                  disabled={!keyValues[fieldId]}
+                                  loading={setKeyMutation.isPending}
+                                  onClick={() => setKeyMutation.mutate({
+                                    provider: keyDef.provider,
+                                    key: keyDef.key,
+                                    value: keyValues[fieldId],
+                                  })}
+                                >
+                                  Save
+                                </Button>
+                                {existing && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      const newValues = { ...keyValues };
+                                      delete newValues[fieldId];
+                                      setKeyValues(newValues);
+                                    }}
+                                  >
+                                    Cancel
+                                  </Button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+              <p className="text-xs text-slate-400 border-t pt-3">
+                When set, transfers will use your keys instead of the platform default. Remove a key to revert to platform defaults.
+              </p>
+            </CardContent>
+          )}
         </Card>
       </div>
     </div>

@@ -22,8 +22,10 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const user = useAuthStore.getState().user;
+      const isEmployee = user?.role === 'employee';
       useAuthStore.getState().logout();
-      window.location.href = '/login';
+      window.location.href = isEmployee ? '/employee-login' : '/login';
       return Promise.reject(error);
     }
     // Extract API error message

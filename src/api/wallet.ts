@@ -1,5 +1,5 @@
 import apiClient from './client';
-import type { BusinessWallet, WalletTransactionListResponse } from '@/types';
+import type { BusinessWallet, WalletTransactionListResponse, LedgerEntryListResponse, ReconciliationResult } from '@/types';
 
 export const walletApi = {
   getWallet() {
@@ -21,5 +21,19 @@ export const walletApi = {
       '/v1/wallets/deposit',
       { amount, email }
     );
+  },
+
+  createVirtualAccount(data: { account_name?: string } = {}) {
+    return apiClient.post<BusinessWallet>('/v1/wallets/virtual-account', data);
+  },
+
+  getLedgerEntries(page = 1, limit = 50) {
+    return apiClient.get<LedgerEntryListResponse>('/v1/wallets/ledger', {
+      params: { page, limit },
+    });
+  },
+
+  getReconciliation() {
+    return apiClient.get<ReconciliationResult>('/v1/wallets/reconcile');
   },
 };

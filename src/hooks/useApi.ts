@@ -273,6 +273,31 @@ export function useProcessPayroll() {
   });
 }
 
+export function useAmendPayroll() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: number) => payrollApi.amend(id).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['payroll-runs'] });
+      toast.success('Payroll recalculated');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
+export function useReversePayroll() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, reason }: { id: number; reason: string }) =>
+      payrollApi.reverse(id, reason).then((r) => r.data),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['payroll-runs'] });
+      toast.success('Payroll reversed');
+    },
+    onError: (err: Error) => toast.error(err.message),
+  });
+}
+
 // === Transfers ===
 export function useTransfers(page = 1, limit = 20) {
   return useQuery({
@@ -335,6 +360,21 @@ export function useWalletTransactions(page = 1, limit = 10) {
   return useQuery({
     queryKey: ['wallet-transactions', { page, limit }],
     queryFn: () => walletApi.getTransactions(page, limit).then((r) => r.data),
+  });
+}
+
+// === Ledger ===
+export function useLedgerEntries(page = 1, limit = 50) {
+  return useQuery({
+    queryKey: ['ledger-entries', { page, limit }],
+    queryFn: () => walletApi.getLedgerEntries(page, limit).then((r) => r.data),
+  });
+}
+
+export function useReconciliation() {
+  return useQuery({
+    queryKey: ['reconciliation'],
+    queryFn: () => walletApi.getReconciliation().then((r) => r.data),
   });
 }
 

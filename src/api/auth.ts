@@ -35,4 +35,12 @@ export const authApi = {
   resetPassword(token: string, new_password: string) {
     return apiClient.post('/v1/auth/reset-password', { token, new_password });
   },
+
+  verifyEmail(token: string) {
+    return apiClient.post('/v1/auth/verify-email', { token });
+  },
+
+  resendVerification() {
+    return apiClient.post('/v1/auth/resend-verification');
+  },
 };

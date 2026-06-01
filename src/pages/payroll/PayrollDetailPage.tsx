@@ -9,6 +9,8 @@ import {
   Play,
   Download,
   FileText,
+  RefreshCcw,
+  RotateCcw,
 } from 'lucide-react';
 import {
   usePayrollRun,
@@ -16,6 +18,8 @@ import {
   useApprovePayroll,
   useRejectPayroll,
   useProcessPayroll,
+  useAmendPayroll,
+  useReversePayroll,
 } from '@/hooks/useApi';
 import { useAuthStore } from '@/store/authStore';
 import { hasRole } from '@/utils/roles';
@@ -47,10 +51,14 @@ export default function PayrollDetailPage() {
   const approvePayroll = useApprovePayroll();
   const rejectPayroll = useRejectPayroll();
   const processPayroll = useProcessPayroll();
+  const amendPayroll = useAmendPayroll();
+  const reversePayroll = useReversePayroll();
 
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [rejectOpen, setRejectOpen] = useState(false);
   const [rejectReason, setRejectReason] = useState('');
+  const [reverseOpen, setReverseOpen] = useState(false);
+  const [reverseReason, setReverseReason] = useState('');
   const [downloading, setDownloading] = useState<string | null>(null);
 
   function toggleExpand(entryId: number) {
@@ -92,6 +100,8 @@ export default function PayrollDetailPage() {
   const canApprove = role && hasRole(role, ['admin', 'approver']) && run.status === 'pending_approval';
   const canReject = canApprove;
   const canProcess = role && hasRole(role, ['admin', 'operator']) && (run.status === 'approved' || run.status === 'draft');
+  const canAmend = role && hasRole(role, ['admin', 'operator']) && run.status === 'draft';
+  const canReverse = role && hasRole(role, ['admin', 'operator']) && run.status === 'completed';
 
   return (
     <div className="space-y-6">
@@ -125,10 +135,22 @@ export default function PayrollDetailPage() {
               Reject
             </Button>
           )}
+          {canAmend && (
+            <Button variant="outline" icon={<RefreshCcw className="h-4 w-4" />}
+              loading={amendPayroll.isPending} onClick={() => amendPayroll.mutate(runId)}>
+              Amend
+            </Button>
+          )}
           {canProcess && (
             <Button icon={<Play className="h-4 w-4" />}
               loading={processPayroll.isPending} onClick={() => processPayroll.mutate(runId)}>
               Process now
+            </Button>
+          )}
+          {canReverse && (
+            <Button variant="danger" icon={<RotateCcw className="h-4 w-4" />}
+              onClick={() => setReverseOpen(true)}>
+              Reverse
             </Button>
           )}
         </div>
@@ -305,6 +327,40 @@ export default function PayrollDetailPage() {
               }}
             >
               Reject payroll
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Reverse Modal */}
+      <Modal open={reverseOpen} onClose={() => setReverseOpen(false)} title="Reverse payroll">
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">
+            This will mark the payroll run as reversed. Provide a reason for the reversal.
+          </p>
+          <textarea
+            value={reverseReason}
+            onChange={(e) => setReverseReason(e.target.value)}
+            placeholder="Reason for reversal (e.g. incorrect salary data, duplicate run)..."
+            rows={3}
+            className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg
+              focus:outline-none focus:ring-2 focus:ring-[#EF4444]/20 focus:border-[#EF4444]
+              resize-none"
+          />
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setReverseOpen(false)}>Cancel</Button>
+            <Button
+              variant="danger"
+              disabled={!reverseReason.trim()}
+              loading={reversePayroll.isPending}
+              onClick={() => {
+                reversePayroll.mutate(
+                  { id: runId, reason: reverseReason },
+                  { onSuccess: () => { setReverseOpen(false); setReverseReason(''); } }
+                );
+              }}
+            >
+              Reverse payroll
             </Button>
           </div>
         </div>
