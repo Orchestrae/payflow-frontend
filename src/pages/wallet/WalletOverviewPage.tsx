@@ -157,7 +157,7 @@ export default function WalletOverviewPage() {
                   variant="secondary"
                   icon={<Plus className="h-4 w-4" />}
                   loading={createVirtualAccount.isPending}
-                  onClick={() => createVirtualAccount.mutate()}
+                  onClick={() => createVirtualAccount.mutate(undefined)}
                 >
                   Create Virtual Account
                 </Button>
