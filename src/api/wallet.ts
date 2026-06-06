@@ -23,7 +23,7 @@ export const walletApi = {
     );
   },
 
-  createVirtualAccount(data: { account_name?: string } = {}) {
+  createVirtualAccount(data: { account_name: string; customer_name: string; bvn: string; customer_email?: string }) {
     return apiClient.post<BusinessWallet>('/v1/wallets/virtual-account', data);
   },
 

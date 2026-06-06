@@ -21,12 +21,15 @@ export default function WalletOverviewPage() {
   const [fundAmount, setFundAmount] = useState('');
   const [fundLoading, setFundLoading] = useState(false);
 
-  // Create Virtual Account mutation
+  // Create Virtual Account modal state
+  const [vaOpen, setVaOpen] = useState(false);
+  const [vaForm, setVaForm] = useState({ account_name: '', customer_name: '', bvn: '', customer_email: '' });
   const createVirtualAccount = useMutation({
-    mutationFn: () => walletApi.createVirtualAccount().then((r) => r.data),
+    mutationFn: () => walletApi.createVirtualAccount(vaForm).then((r) => r.data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['wallet'] });
       toast.success('Virtual account created');
+      setVaOpen(false);
     },
     onError: (err: Error) => toast.error(err.message || 'Failed to create virtual account'),
   });
@@ -146,8 +149,7 @@ export default function WalletOverviewPage() {
                 <Button
                   variant="secondary"
                   icon={<Plus className="h-4 w-4" />}
-                  loading={createVirtualAccount.isPending}
-                  onClick={() => createVirtualAccount.mutate()}
+                  onClick={() => setVaOpen(true)}
                 >
                   Create Virtual Account
                 </Button>
@@ -156,6 +158,67 @@ export default function WalletOverviewPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Create Virtual Account Modal */}
+      <Modal open={vaOpen} onClose={() => setVaOpen(false)} title="Create Virtual Account">
+        <div className="space-y-4">
+          <p className="text-sm text-slate-600">
+            Provide your details to create a dedicated virtual account for receiving bank transfers.
+          </p>
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1">Account Name *</label>
+            <input
+              type="text"
+              value={vaForm.account_name}
+              onChange={(e) => setVaForm({ ...vaForm, account_name: e.target.value })}
+              placeholder="e.g. Acme Corp Payroll"
+              className="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22BC66]/20 focus:border-[#22BC66]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1">Customer Name *</label>
+            <input
+              type="text"
+              value={vaForm.customer_name}
+              onChange={(e) => setVaForm({ ...vaForm, customer_name: e.target.value })}
+              placeholder="Your full name"
+              className="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22BC66]/20 focus:border-[#22BC66]"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1">BVN *</label>
+            <input
+              type="text"
+              maxLength={11}
+              value={vaForm.bvn}
+              onChange={(e) => setVaForm({ ...vaForm, bvn: e.target.value.replace(/\D/g, '') })}
+              placeholder="11-digit BVN"
+              className="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22BC66]/20 focus:border-[#22BC66]"
+            />
+            <p className="text-xs text-slate-400 mt-1">Required for KYC verification</p>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1">Email (optional)</label>
+            <input
+              type="email"
+              value={vaForm.customer_email}
+              onChange={(e) => setVaForm({ ...vaForm, customer_email: e.target.value })}
+              placeholder="you@company.com"
+              className="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#22BC66]/20 focus:border-[#22BC66]"
+            />
+          </div>
+          <div className="flex justify-end gap-2 pt-2">
+            <Button variant="outline" onClick={() => setVaOpen(false)}>Cancel</Button>
+            <Button
+              loading={createVirtualAccount.isPending}
+              disabled={!vaForm.account_name || !vaForm.customer_name || vaForm.bvn.length !== 11}
+              onClick={() => createVirtualAccount.mutate()}
+            >
+              Create Account
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* Fund Wallet Modal */}
       <Modal open={fundOpen} onClose={() => setFundOpen(false)} title="Fund Wallet">
